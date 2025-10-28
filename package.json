@@ -1,0 +1,27 @@
+{
+  "name": "timin-au-mvp",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Timin - Flexible Work Marketplace for Australia",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "DEV=1 node server.js",
+    "prod": "NODE_ENV=production node server.js",
+    "health": "curl http://localhost:3000/health"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+    "marketplace",
+    "gig-economy",
+    "shifts",
+    "jobs",
+    "australia"
+  ],
+  "author": "",
+  "license": "MIT"
+}
+
+
