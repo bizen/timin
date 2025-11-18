@@ -541,7 +541,7 @@ function createServer() {
   ensureDataFiles();
   ensureSeed();
 
-  const server = http.createServer(async (req, res) => {
+const app = async (req, res) => {
     try {
       const urlObj = new URL(req.url, `http://${req.headers.host}`);
 
@@ -573,31 +573,39 @@ function createServer() {
       console.error('Server Error:', e);
       return sendJson(res, 500, { error: 'server_error' });
     }
-  });
+  };
 
-  return server;
+  const server = http.createServer(app);
+  return { server, app };
 }
 
-const server = createServer();
-server.listen(PORT, HOST, () => {
-  console.log(`Timin server running at http://localhost:${PORT}`);
-  const flag = String(process.env.DEV || process.env.OPEN || '').toLowerCase();
-  const shouldOpen = flag === '' ? Boolean(process.env.DEV || process.env.OPEN) : !['0','false','no','off'].includes(flag);
-  if (shouldOpen) {
-    const url = `http://localhost:${PORT}`;
-    try {
-      const platform = process.platform;
-      if (platform === 'darwin') {
-        spawn('open', [url], { stdio: 'ignore', detached: true }).unref();
-      } else if (platform === 'win32') {
-        spawn('cmd', ['/c', 'start', '""', url], { stdio: 'ignore', detached: true }).unref();
-      } else {
-        spawn('xdg-open', [url], { stdio: 'ignore', detached: true }).unref();
+const { server, app } = createServer();
+
+// Export for Vercel
+module.exports = app;
+
+// Only listen if running directly
+if (require.main === module) {
+  server.listen(PORT, HOST, () => {
+    console.log(`Timin server running at http://localhost:${PORT}`);
+    const flag = String(process.env.DEV || process.env.OPEN || '').toLowerCase();
+    const shouldOpen = flag === '' ? Boolean(process.env.DEV || process.env.OPEN) : !['0','false','no','off'].includes(flag);
+    if (shouldOpen) {
+      const url = `http://localhost:${PORT}`;
+      try {
+        const platform = process.platform;
+        if (platform === 'darwin') {
+          spawn('open', [url], { stdio: 'ignore', detached: true }).unref();
+        } else if (platform === 'win32') {
+          spawn('cmd', ['/c', 'start', '""', url], { stdio: 'ignore', detached: true }).unref();
+        } else {
+          spawn('xdg-open', [url], { stdio: 'ignore', detached: true }).unref();
+        }
+      } catch (e) {
+        // ignore open error
       }
-    } catch (e) {
-      // ignore open error
     }
-  }
-});
+  });
+}
 
 
