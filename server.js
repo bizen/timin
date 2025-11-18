@@ -311,19 +311,13 @@ async function handleApi(req, res, urlObj) {
 
   if (req.method === 'PUT' && urlObj.pathname === '/api/me/profile') {
     const user = getAuthUser(req);
-    if (!user) {
-      console.log('Profile update failed: No authenticated user');
-      return sendJson(res, 403, { error: 'forbidden' });
-    }
+    if (!user) return sendJson(res, 403, { error: 'forbidden' });
+    
     const body = await readRequestBody(req);
-    console.log('Profile update request:', { userId: user.id, role: user.role, body });
-    const { firstName, lastName, phoneNumber, bio, companyName, businessType, skills } = body;
+    const { firstName, lastName, phoneNumber, bio, companyName, businessType, skills, englishLevel } = body;
     const users = readJson(USERS_FILE, []);
     const idx = users.findIndex(u => u.id === user.id);
-    if (idx === -1) {
-      console.log('Profile update failed: User not found in database');
-      return sendJson(res, 404, { error: 'user_not_found' });
-    }
+    if (idx === -1) return sendJson(res, 404, { error: 'user_not_found' });
     
     if (!users[idx].profile) users[idx].profile = {};
     if (firstName !== undefined) users[idx].profile.firstName = String(firstName).trim();
@@ -337,11 +331,11 @@ async function handleApi(req, res, urlObj) {
     }
     
     if (user.role === 'worker') {
+      if (englishLevel !== undefined) users[idx].profile.englishLevel = String(englishLevel).trim();
       if (Array.isArray(skills)) users[idx].profile.skills = skills.map(s => String(s).trim()).filter(s => s);
     }
     
     writeJson(USERS_FILE, users);
-    console.log('Profile updated successfully:', users[idx].profile);
     return sendJson(res, 200, { ok: true, profile: users[idx].profile });
   }
 
